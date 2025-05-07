@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive Stock Tracker using Yahoo Finance API">
+  <title>YFinance Stock Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="script.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 0; }
+    .container { max-width: 500px; margin: 50px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); }
+    h1 { text-align: center; font-size: 24px; margin-bottom: 20px; }
+    .input-section { display: flex; justify-content: center; gap: 10px; margin-bottom: 22px; }
+    input { padding: 10px; font-size: 16px; border: 1px solid #ddd; border-radius: 5px; }
+    button { padding: 10px 20px; font-size: 16px; background-color: #0073e6; color: #fff; border: none; border-radius: 5px; cursor: pointer; transition: background 0.3s; }
+    button:hover { background-color: #fff; }
+    .stock-info { margin-top: 20px; }
+    .stock-info p { font-size: 16px; margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Get Data</h1>
+    <div class="input-section">
+      <input type="text" id="stock-symbol" placeholder="Enter Ticker">
+      <button onclick="fetchStockData()">Fetch Data</button>
+    </div>
+
+    <div id="stock-info" class="stock-info">
+      <h2>Stock Information</h2>
+      <div id="stock-details"></div>
+    </div>
+  </div>
+
+  <script>
+    async function fetchStockData() {
+      const symbol = document.getElementById('stock-symbol').value.trim().toUpperCase();
+      if (!symbol) return alert('Enter Stock Tiker.');
+
+      const apiUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
+
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`Error: ${response.status} - ${response.statusText}`);
+
+        const data = await response.json();
+
+        if (data.chart?.result?.length) {
+          const stockInfo = data.chart.result[0].meta;
+          document.getElementById('stock-details').innerHTML = `
+            <p><strong>Symbol:</strong> ${symbol}</p>
+            <p><strong>Name:</strong> $${stockInfo.longName ?? 'N/A'}</p>
+            <p><strong>Last Price:</strong> $${stockInfo.regularMarketPrice ?? 'N/A'}</p>
+            <p><strong>Volume:</strong> ${stockInfo.regularMarketVolume ?? 'N/A'}</p>
+             <p><strong>52 Week Low:</strong> ${stockInfo.fiftyTwoWeekLow ?? 'N/A'}</p>
+            <p><strong>52 Week High:</strong> ${stockInfo.fiftyTwoWeekHigh ?? 'N/A'}</p>
+            <p><strong>Previous Close:</strong> $${stockInfo.chartPreviousClose ?? 'N/A'}</p>
+          `;
+        } else {
+          document.getElementById('stock-details').innerHTML = '<p>Try a new symbol, no data available.</p>';
+        }
+      } catch (error) {
+        document.getElementById('stock-details').innerHTML = `<p>Error fetching data: ${error.message}. Please try another symbol.</p>`;
+        console.error('Fetch Error:', error);
+      }
+    }
+  </script>
+</body>
+</html>
